@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cloud.hpp"
 #include "edge.hpp"
 #include <vector>
 /*  graph -- an array of edge pointers arranged by
@@ -13,13 +12,13 @@
  */
 class graph
 {
-    cloud *c;
+
     std::vector<edge> edges;
     long size;
     int V;
 
 public:
-    graph(cloud &_c, std::vector<edge> &_edges, long _V);
+    graph(std::vector<edge> &_edges, long _V);
     
     void print();
     

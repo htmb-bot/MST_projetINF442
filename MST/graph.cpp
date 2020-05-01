@@ -1,5 +1,4 @@
 #include "graph.hpp" // This is the header for the class implemented here
-#include "cloud.hpp" // Used in the constructor
 #include "edge.hpp"  // Used in almost all methods
 #include <iostream>
 #include <algorithm> // This provides the sort() method for the constructor
@@ -7,11 +6,8 @@
 
 /* graph -- method implementations */
 
-graph::graph(cloud &_c, std::vector<edge> &_edges, long _V)
+graph::graph(std::vector<edge> &_edges, long _V)
 {
-    c = &_c;
-    edge::set_cloud(c);
-
     edges = _edges;
 
     size = edges.size();
