@@ -13,14 +13,14 @@
 class graph
 {
 
+public:
     std::vector<edge> edges;
-    long size;
+    int size;
     int V;
 
-public:
+
     graph(std::vector<edge> &_edges, long _V);
     
     void print();
     
-    long get_size();
 };

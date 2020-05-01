@@ -10,14 +10,9 @@ graph::graph(std::vector<edge> &_edges, long _V)
 {
     edges = _edges;
 
-    size = edges.size();
+    size = (int) edges.size();
 
     V = _V;
-}
-
-long graph::get_size()
-{
-    return size;
 }
 
 void graph::print()
