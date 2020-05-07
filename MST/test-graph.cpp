@@ -24,6 +24,8 @@ bool compare(edge e1, edge e2)
   return e1.weight < e2.weight;
 }
 
+
+
 //find function (path compression variant)
 int find(cluster clusters[], int i)
 {
@@ -85,6 +87,64 @@ graph kruskal(graph G)
   return new_G;
 }
 
+graph boruvka(graph G){
+  long V = G.V;
+  std::vector<edge> new_edges;
+  std::vector<edge> g_edges = G.edges;
+  long E = (int) g_edges.size();
+  
+  cluster clusters[V];
+  int *cheap_edge = new int[V];
+  int nbClusters = V;
+  int totalWeight = 0;
+  
+  for (int vertice = 0; vertice < V; vertice++){
+    clusters[vertice].parent = vertice;
+    clusters[vertice].rank = 0;
+    cheap_edge[vertice] = -1;
+  }
+  
+  while (nbClusters > 1){
+    
+    for (int vertice = 0; vertice < V; vertice ++)
+      cheap_edge[vertice] = -1;
+    
+    for (int i=0; i<E; i++){
+      int ind1 = find(clusters,g_edges[i].p1);
+      int ind2 = find(clusters,g_edges[i].p2);
+      
+      if (ind1 != ind2){
+        if (cheap_edge[ind1] == -1 || g_edges[cheap_edge[ind1]].weight > g_edges[i].weight) cheap_edge[ind1] = i; 
+        if (cheap_edge[ind2] == -1 || g_edges[cheap_edge[ind2]].weight > g_edges[i].weight) cheap_edge[ind2] = i;   
+      }
+      else continue;
+    
+    }
+    
+    for (int i=0; i<V; i++){ 
+      
+      if (cheap_edge[i] != -1){ 
+        int ind1 = find(clusters, g_edges[cheap_edge[i]].p1); 
+        int ind2 = find(clusters, g_edges[cheap_edge[i]].p2); 
+        
+        if (ind1 == ind2) continue; 
+        
+        totalWeight += g_edges[cheap_edge[i]].weight;
+         
+        new_edges.push_back(g_edges[cheap_edge[i]]); 
+  
+        cluster_union(clusters, ind1, ind2); 
+        nbClusters--; 
+      } 
+    } 
+  } 
+  
+  graph new_G = graph(new_edges, V);
+  return new_G; 
+   
+}
+
+
 int main()
 {
 
@@ -113,6 +173,13 @@ cout << "BEGIN KRUSKAL" << endl;
 cout << "" << endl;
 
 graph new_G = kruskal(test_graph);
+new_G.print();
+
+cout << "" << endl;
+cout << "BEGIN BORUVKA" << endl;
+cout << "" << endl;
+
+new_G = boruvka(test_graph);
 new_G.print();
 
 return 0;
