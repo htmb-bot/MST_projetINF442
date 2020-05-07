@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono> 
 #include <fstream>
 #include <vector>
 #include <algorithm>
@@ -10,6 +11,16 @@
 using std::cout;
 using std::cin;
 using std::endl;
+using namespace std::chrono;
+
+//colour stamps
+const std::string red("\033[0;31m");
+const std::string green("\033[1;32m");
+const std::string yellow("\033[1;33m");
+const std::string cyan("\033[0;36m");
+const std::string magenta("\033[0;35m");
+const std::string reset("\033[0m");
+
 
 //union-find structure for Kruskal
 struct cluster
@@ -198,6 +209,9 @@ std::vector<edge> test_edges;
 int p1;
 int p2;
 double w;
+
+
+
 while (cin >> p1){
   cin >> p2;
   cin >> w;
@@ -205,27 +219,49 @@ while (cin >> p1){
   test_edges.push_back(e);
 }
 
+cout << "BUILDING GRAPH" << endl;
+auto start = high_resolution_clock::now();
+
 graph test_graph = graph(test_edges, test_V);
 test_graph.print();
+
+auto stop = high_resolution_clock::now(); 
+auto duration = duration_cast<microseconds>(stop - start); 
+cout <<green<< "OK:" <<"Graph built in " << duration.count() << " microseconds"<< reset <<endl; 
+
+
 cout << "" << endl;
-cout << "BEGIN KRUSKAL" << endl;
+cout << red<<"BEGIN KRUSKAL" <<reset << endl;
 cout << "" << endl;
+start = high_resolution_clock::now();
 
 graph new_G = kruskal(test_graph);
+stop = high_resolution_clock::now(); 
 new_G.print();
+duration = duration_cast<microseconds>(stop - start); 
+cout <<green<< "OK:" <<"Kruskal executed in " << duration.count() << " microseconds"<< reset <<endl; 
 
 cout << "" << endl;
-cout << "BEGIN BORUVKA" << endl;
+cout << red<<"BEGIN BORUVKA" << reset <<endl;
 cout << "" << endl;
+start = high_resolution_clock::now();
 
 new_G = boruvka(test_graph);
+stop = high_resolution_clock::now(); 
 new_G.print();
+duration = duration_cast<microseconds>(stop - start); 
+cout << green << "OK:" <<"Boruvka executed in " << duration.count() << " microseconds"<<reset << endl; 
 
 cout << "" << endl;
-cout << "BEGIN PRIM" << endl;
+cout << red << "BEGIN PRIM" << reset << endl;
 cout << "" << endl;
+start = high_resolution_clock::now();
 
 new_G = prim(test_graph);
+stop = high_resolution_clock::now(); 
 new_G.print();
+duration = duration_cast<microseconds>(stop - start); 
+cout << green << "OK:" <<"Prim executed in " << duration.count() << " microseconds"<< reset << endl; 
+
 return 0;
 }
