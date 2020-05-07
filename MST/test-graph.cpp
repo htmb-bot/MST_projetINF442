@@ -2,10 +2,10 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <bits/stdc++.h>
 
 #include "edge.hpp"
 #include "graph.hpp"
-
 
 using std::cout;
 using std::cin;
@@ -24,6 +24,11 @@ bool compare(edge e1, edge e2)
   return e1.weight < e2.weight;
 }
 
+//another edge compare function
+bool compare2(edge e1, edge e2)
+{
+  return e1.weight > e2.weight;
+}
 
 
 //find function (path compression variant)
@@ -144,6 +149,42 @@ graph boruvka(graph G){
    
 }
 
+graph prim(graph G){
+  long V = G.V;
+  std::vector<edge> new_edges;
+  
+  std::priority_queue<edge,std::vector<edge>, decltype(&compare2)> priority(compare2);
+  
+  bool marked[V];
+  
+  for (int i=0; i<V; i++)
+    marked[i] = false;
+  
+  int indice = 0;
+  int nbEdgesMST = 0;
+  marked[0] = true;
+  
+  for (int i =0; i< (int) G.adj[0].size();i++){
+    priority.push(edge(0,G.adj[0][i].first,G.adj[0][i].second));
+  }
+  
+  while (nbEdgesMST < V-1){
+    edge actual = priority.top();
+    priority.pop();
+    if (marked[actual.p2] == false){
+      new_edges.push_back(actual);
+      nbEdgesMST ++;
+      marked[actual.p2] = true;
+      for (int i=0; i< (int) G.adj[actual.p2].size();i++)
+        priority.push(edge(actual.p2,G.adj[actual.p2][i].first,G.adj[actual.p2][i].second));   
+    }
+  }
+  graph new_G = graph(new_edges, V);
+  return new_G;   
+  
+}
+
+
 
 int main()
 {
@@ -157,16 +198,14 @@ std::vector<edge> test_edges;
 int p1;
 int p2;
 double w;
-
 while (cin >> p1){
   cin >> p2;
   cin >> w;
   edge e = edge(p1,p2,w);
   test_edges.push_back(e);
 }
-  
-graph test_graph = graph(test_edges, test_V);
 
+graph test_graph = graph(test_edges, test_V);
 test_graph.print();
 cout << "" << endl;
 cout << "BEGIN KRUSKAL" << endl;
@@ -182,5 +221,11 @@ cout << "" << endl;
 new_G = boruvka(test_graph);
 new_G.print();
 
+cout << "" << endl;
+cout << "BEGIN PRIM" << endl;
+cout << "" << endl;
+
+new_G = prim(test_graph);
+new_G.print();
 return 0;
 }
