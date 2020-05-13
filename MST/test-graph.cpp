@@ -5,8 +5,16 @@
 #include <algorithm>
 #include <bits/stdc++.h>
 
+#include <cassert>
+#include <cmath>	
+#include <cfloat>
+#include <cstdlib>
+#include <ctime>	
+
 #include "edge.hpp"
 #include "graph.hpp"
+#include "point.hpp"
+#include "cloud.hpp"
 
 using std::cout;
 using std::cin;
@@ -195,6 +203,88 @@ graph prim(graph G){
   
 }
 
+graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_columns) {
+  std::cout<<"début clustering"<<std::endl  ;
+
+  // open data file
+	std::ifstream is(csv_filename);
+	assert(is.is_open());
+  std::cout<<"fichier ouvert"<<std::endl  ;
+
+	// read header line
+	std::string header_line;
+	std::getline(is, header_line);
+	std::vector<std::string> names;
+
+	//const int d = nb_columns(header_line) - 1; //on enleve la colonne finale des noms
+  const int d=nb_columns;
+	const int k = nb_clusters;
+	int nb_points=0;
+  point::set_dim(nb_columns);
+
+	//créer le graphe 
+  std::cout<<"debut creation graph"<<std::endl;
+  std::vector<edge> edges;
+	std::vector<point> points;
+
+	// point to read into
+  cloud c(nb_columns,10000 , k);
+
+  //pour contenir le nom des points, pas utile
+  std::string next_name;
+
+	// while not at end of file
+	while(is.peek() != EOF)
+	{
+		// read new points
+    point p=*new point();
+		for(int m = 0; m < d; m++)
+		{
+			is >> p.coords[m];
+		}
+
+		c.add_point(p, 0);
+
+		// consume \n
+    is >> next_name;
+		nb_points++;
+		is.get();
+	}
+  
+  std::cout<<"nombre de points utilisés dans cette base de données: ";
+  std::cout<<nb_points<<std::endl;
+  std::cout<<"nombre de clusters souhaité: "<<nb_clusters<<std::endl;
+
+
+    //créer le graphe 
+    std::vector<edge> list;
+    std::cout<< "graph créé";
+    //y ajouter toutes les arêtes de 2 points distincts// et triées en poids
+    for(int i=0;i<nb_points;i++){
+        for (int j=i+1;j<nb_points;j++){
+            list.push_back(edge(i,j,c.get_point(i).dist(c.get_point(j))));
+        }
+    }
+    std::sort(list.begin(), list.end(),compare);
+
+    graph G=graph(list, nb_points);
+    std::cout<<std::endl;
+    //G.print();
+    std::cout<<std::endl;
+
+    //on transforme G en MST
+    graph G_MST = kruskal(G);
+
+    //on supprime les k-1 derniers éléments, qui correspodnent aux arêtes de plus gros poids
+    std::vector<edge> Ed=G_MST.edges; 
+    for(int i=0; i<k-1;i++){
+        Ed.pop_back();
+    }
+    graph finalG=graph(Ed, nb_points);
+    return finalG;
+}
+
+
 
 
 int main()
@@ -262,6 +352,27 @@ stop = high_resolution_clock::now();
 new_G.print();
 duration = duration_cast<microseconds>(stop - start); 
 cout << green << "OK:" <<"Prim executed in " << duration.count() << " microseconds"<< reset << endl; 
+  
+
+/////////////
+//Essai Clustering
+/////////////
+
+std::string csv_filename= "./iris.csv";
+int nb_clusters= 3;
+int nb_dim=4;
+
+cout << "" << endl;
+cout << red<<"BEGIN CLUSTERING WITH KRUSKAL" << reset <<endl;
+cout << "" << endl;
+start = high_resolution_clock::now();
+
+graph GG=kruskalclustering(csv_filename, nb_clusters, nb_dim);
+stop = high_resolution_clock::now(); 
+GG.print();
+duration = duration_cast<microseconds>(stop - start); 
+cout << green << "OK:" <<"Boruvka executed in " << duration.count() << " microseconds"<<reset << endl;
+
 
 return 0;
 }
