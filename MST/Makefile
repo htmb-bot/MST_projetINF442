@@ -28,3 +28,4 @@ clean-programs:
 
 clean: clean-objects clean-programs
 	rm -vf *~
+	
