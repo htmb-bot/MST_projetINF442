@@ -18,7 +18,7 @@ edge.o:			edge.cpp edge.hpp
 graph.o: 		graph.cpp edge.hpp graph.hpp
 
 test-graph: test-graph.cpp graph.o edge.o
-	$(CXX) $(CXXFLAGS) -o $@ test-graph.cpp graph.o edge.o
+	$(CXX) $(CXXFLAGS) -o $@ test-graph.cpp graph.o edge.o point.o cloud.o
 
 clean-objects:
 	rm -vf *.o
