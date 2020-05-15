@@ -36,7 +36,9 @@ Implementation of an MST-based k-clustering strategy, where k is unknown (using 
 # Small guide on how to test tasks 1-2:
 
 First generate a graph using $java -jar ashiip_gui.jar You will need to enter graph size and other desired properties.
+
 Then convert the graph to a readable format using our friend javiertheconverter.cpp $./javiertheconverter < Graphexample.txt
+
 Then feel free to test the program on test-graph.cpp $./test-graph < example.txt
   
 
