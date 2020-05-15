@@ -25,4 +25,5 @@ public:
     
     void print();
     void print2();
+    long long globalweight();
 };
