@@ -2,7 +2,7 @@
 //Les clustering se fait automatiquement sur le fichier iris.csv
 //Pour faire le clustering sur cereales.csv, commenter les lignes 658->662 et commenter les lignes 664-668
 //Pour clusteriser un autre fichier, rentrer son nom csv_filename, le nombre de clusters souhaités nb_cluster, le nombre de coordonnées par points nb_dim,
-// le nombre de points nb_samples, et l'indice de la colonne des points colonne_noms
+// le nombre de points nb_samples, et l'indice de la colonne du nom des points colonne_noms
 
 #include <iostream>
 #include <chrono> 
