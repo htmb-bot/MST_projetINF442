@@ -4,11 +4,20 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <queue>
+#include <string>
 using namespace std;
 
 #include "mpi.h"
 #include "ghs_edge.cpp"
 
+
+//colour stamps
+const string red("\033[0;31m");
+const string green("\033[1;32m");
+const string yellow("\033[1;33m");
+const string cyan("\033[0;36m");
+const string magenta("\033[0;35m");
+const string reset("\033[0m");
 
 #define INF 10000
 
@@ -18,12 +27,12 @@ int deg;
 vector<ghs_edge > edges; 
 int nodeState = 0; //node state SLEEPING=0 FIND=1 FOUND=2 ---- edgestate Basic=0 Branch=1 Rejected=2
 int fragmentID;
-int level;
-int findcount;
-int inbranch;
-int bestedge;
-int bestweight;
-int testedge;
+int level = 0;
+int findcount = 0;
+int inbranch = -1;
+int bestedge = -1;
+int bestweight = INF;
+int testedge = -1;
 int halt = 0;
 
 class msg{
@@ -86,6 +95,7 @@ void launch_connect();
 void procedure_wakeup(){
   int minIndex = std::min_element(edges.begin(),edges.end(),compare) - edges.begin();
   edges[minIndex].state = 1; //BRANCH
+  cout << cyan << "[Proc " << id << "] (wakeup) linking with "<< edges[minIndex].destination << " in MST. Weight = " << edges[minIndex].weight << reset<< endl;
   level = 0;
   nodeState = 2; //FOUND
   findcount = 0;
@@ -104,12 +114,13 @@ void receive_connect(int L, int j){
   }
   if (L<level){
     edges[ind].state = 1;
+    cout << cyan << "[Proc " << id << "] (connect) linking with "<< edges[ind].destination << " in MST. Weight = " << edges[ind].weight << reset<< endl;
     int buff[3];
     buff[0] = level;
     buff[1] = fragmentID;
     buff[2] = nodeState;
     MPI_Send (&buff , 3 , MPI_INT , edges[ind].destination , 9, MPI_COMM_WORLD );
-    cout << "SEND Initiate(" << level << ", " << fragmentID << ", " << nodeState << ") from " << id << " to " << edges[ind].destination << endl;
+    cout << "SEND (smaller) Initiate(" << level << ", " << fragmentID << ", " << nodeState << ") from " << id << " to " << edges[ind].destination << endl;
     //SEND Initiate(level,fragmentID,nodeState) to edges[ind].destination
     if (nodeState == 1) findcount++;
   }
@@ -123,12 +134,12 @@ void receive_connect(int L, int j){
     //Wait (place message on end of queue) --> resend ??
   }
   else {
-  int buff[3];
-  buff[0] = level+1;
-  buff[1] = edges[ind].weight;
-  buff[2] = 1;
-  MPI_Send (&buff , 3 , MPI_INT , edges[ind].destination , 9, MPI_COMM_WORLD );
-  cout << "SEND Initiate(" << level+1 << ", " << edges[ind].weight << ", " << 1 << ") from " << id << " to " << edges[ind].destination << endl;
+    int buff[3];
+    buff[0] = level+1;
+    buff[1] = edges[ind].weight;
+    buff[2] = 1;
+    MPI_Send (&buff , 3 , MPI_INT , edges[ind].destination , 9, MPI_COMM_WORLD );
+    cout << "SEND (bigger) Initiate(" << level+1 << ", " << edges[ind].weight << ", " << 1 << ") from " << id << " to " << edges[ind].destination << endl;
     //SEND Initiate(level+1,edges[ind].weight,1) to edges[ind].destination
   }
 }
@@ -138,10 +149,10 @@ void receive_initiate(int L, int F, int S, int j){
   cout << "[Proc " << id <<"] Received Initiate(" << L <<", " << F << ", " <<S<<") from " << j <<endl;
   level = L;
   launch_test();
-  launch_connect();
   fragmentID = F;
   nodeState = S;
   inbranch = j;
+  launch_connect();
   launch_report();
   bestedge = -1;
   bestweight = INF;
@@ -152,7 +163,7 @@ void receive_initiate(int L, int F, int S, int j){
       buff[1] = F;
       buff[2] = S;
       MPI_Send (&buff , 3 , MPI_INT , edges[i].destination , 9, MPI_COMM_WORLD );
-      cout << "SEND Initiate(" << L << ", " << F << ", " << S << ") from " << id << " to " << edges[i].destination << endl;
+      cout << "SEND (internal) Initiate(" << L << ", " << F << ", " << S << ") from " << id << " to " << edges[i].destination << endl;
       //SEND Initiate(L,F,S) to edges[i].destination
       if (S == 1) findcount++;
     }
@@ -162,6 +173,7 @@ void receive_initiate(int L, int F, int S, int j){
 
 //test procedure
 void procedure_test(){
+
   int ind = -1;
   int minw = INF;
   for (int i=0; i<deg; i++){
@@ -175,11 +187,11 @@ void procedure_test(){
   
   if (ind != -1){
     testedge = ind;
-  int buff[2];
-  buff[0] = level;
-  buff[1] = fragmentID;
-  MPI_Send (&buff , 2 , MPI_INT , edges[ind].destination , 20, MPI_COMM_WORLD );
-  cout << "SEND Test(" << level << ", " << fragmentID << ") from " << id << " to " << edges[ind].destination << endl;
+    int buff[2];
+    buff[0] = level;
+    buff[1] = fragmentID;
+    MPI_Send (&buff , 2 , MPI_INT , edges[ind].destination , 20, MPI_COMM_WORLD );
+    cout << "SEND Test(" << level << ", " << fragmentID << ") from " << id << " to " << edges[ind].destination << endl;
     //SEND Test(level,fragmentID) to edges[ind].destination
   }
   else {
@@ -258,10 +270,10 @@ void receive_reject(int j){
 void procedure_report(){
   if (findcount == 0 && testedge == -1){
     nodeState = 2; //FOUND
-  int buff = bestweight;
-  MPI_Send (&buff , 1 , MPI_INT , inbranch , 16, MPI_COMM_WORLD );
-  cout << "SEND Report(" << bestweight << ") from " << id << " to " << inbranch << endl;
-  //SEND Report(bestweight) to inbranch
+    int buff = bestweight;
+    MPI_Send (&buff , 1 , MPI_INT , inbranch , 16, MPI_COMM_WORLD );
+    cout << "SEND Report(" << bestweight << ") from " << id << " to " << inbranch << endl;
+    //SEND Report(bestweight) to inbranch
   }
 }
 
@@ -297,17 +309,19 @@ void receive_report(int w, int j){
 
 //procedure to change fragment root
 void procedure_changeroot(){
+  cout << "bestedge = " << bestedge << "and points at " << edges[bestedge].destination << " in state " << edges[bestedge].state << endl;
   if (edges[bestedge].state == 1) {
-  int buff = 0;
-  MPI_Send (&buff , 1 , MPI_INT , edges[bestedge].destination , 8, MPI_COMM_WORLD );
-  cout << "SEND Changeroot from " << id << " to " << edges[bestedge].destination << endl;
-  /*SEND Changeroot on edges[bestedge].destination*/}
+    int buff = 0;
+    MPI_Send (&buff , 1 , MPI_INT , edges[bestedge].destination , 8, MPI_COMM_WORLD );
+    cout << "SEND Changeroot from " << id << " to " << edges[bestedge].destination << endl;
+    /*SEND Changeroot on edges[bestedge].destination*/}
   else {
-  int buff = level;
-  MPI_Send (&buff , 1 , MPI_INT , edges[bestedge].destination , 3, MPI_COMM_WORLD );
-  cout << "SEND Connect(" << level << ") from " << id << " to " << edges[bestedge].destination << endl;  
+    int buff = level;
+    MPI_Send (&buff , 1 , MPI_INT , edges[bestedge].destination , 3, MPI_COMM_WORLD );
+    cout << "SEND Connect(" << level << ") from " << id << " to " << edges[bestedge].destination << endl;  
     //SEND Connect(level) to edges[bestedge].destination
     edges[bestedge].state = 1; //BRANCH
+    cout << cyan << "[Proc " << id << "] (changeroot) linking with "<< edges[bestedge].destination << " in MST. Weight = " << edges[bestedge].weight << reset<< endl;
   }
 }
 
