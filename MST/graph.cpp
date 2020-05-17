@@ -44,3 +44,15 @@ void graph::print2(){
     }
   }
 }
+
+//Calculates total weight of the MST (or graph...)
+long long graph::globalweight()
+{
+  long long wei = 0;
+  for (int i=0;i< V; i++){
+    for (int j=0; j<(int)adj[i].size();j++){
+      wei += adj[i][j].second;
+    }  
+  }
+  return wei/2;
+}

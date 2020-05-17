@@ -300,8 +300,7 @@ int p1;
 int p2;
 double w;
 
-
-
+///////INPUT GRAPH////////
 while (cin >> p1){
   cin >> p2;
   cin >> w;
@@ -309,50 +308,53 @@ while (cin >> p1){
   test_edges.push_back(e);
 }
 
-cout << "BUILDING GRAPH" << endl;
+/////TASKS 1 & 2//////	
+
+cout << endl;
+cout << red << "BUILDING GRAPH" << reset << endl;
 auto start = high_resolution_clock::now();
 
 graph test_graph = graph(test_edges, test_V);
-test_graph.print();
+//test_graph.print();
 
 auto stop = high_resolution_clock::now(); 
 auto duration = duration_cast<microseconds>(stop - start); 
 cout <<green<< "OK:" <<"Graph built in " << duration.count() << " microseconds"<< reset <<endl; 
-
+cout << "Weight = " << cyan << test_graph.globalweight() << reset << endl;
 
 cout << "" << endl;
 cout << red<<"BEGIN KRUSKAL" <<reset << endl;
-cout << "" << endl;
 start = high_resolution_clock::now();
 
 graph new_G = kruskal(test_graph);
 stop = high_resolution_clock::now(); 
-new_G.print();
+//new_G.print();
 duration = duration_cast<microseconds>(stop - start); 
 cout <<green<< "OK:" <<"Kruskal executed in " << duration.count() << " microseconds"<< reset <<endl; 
+cout << "Weight = " << cyan << new_G.globalweight() << reset << endl;
 
 cout << "" << endl;
 cout << red<<"BEGIN BORUVKA" << reset <<endl;
-cout << "" << endl;
 start = high_resolution_clock::now();
 
 new_G = boruvka(test_graph);
 stop = high_resolution_clock::now(); 
-new_G.print();
+//new_G.print();
 duration = duration_cast<microseconds>(stop - start); 
 cout << green << "OK:" <<"Boruvka executed in " << duration.count() << " microseconds"<<reset << endl; 
+cout << "Weight = " << cyan << new_G.globalweight() << reset << endl;
 
 cout << "" << endl;
 cout << red << "BEGIN PRIM" << reset << endl;
-cout << "" << endl;
 start = high_resolution_clock::now();
 
 new_G = prim(test_graph);
 stop = high_resolution_clock::now(); 
-new_G.print();
+//new_G.print();
 duration = duration_cast<microseconds>(stop - start); 
 cout << green << "OK:" <<"Prim executed in " << duration.count() << " microseconds"<< reset << endl; 
-  
+cout << "Weight = " << cyan << new_G.globalweight() << reset << endl;
+cout << endl;  
 
 /////////////
 //Essai Clustering
