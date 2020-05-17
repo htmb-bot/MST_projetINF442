@@ -14,9 +14,10 @@ using namespace std;
 //colour stamps
 const string red("\033[0;31m");
 const string green("\033[1;32m");
+const string purple("\033[0;35m");
 const string yellow("\033[1;33m");
 const string cyan("\033[0;36m");
-const string magenta("\033[0;35m");
+const string magenta("\033[0;34m");
 const string reset("\033[0m");
 
 #define INF 10000
@@ -26,7 +27,7 @@ int V;
 int deg;
 vector<ghs_edge > edges; 
 int nodeState = 0; //node state SLEEPING=0 FIND=1 FOUND=2 ---- edgestate Basic=0 Branch=1 Rejected=2
-int fragmentID;
+int fragmentID = -1;
 int level = 0;
 int findcount = 0;
 int inbranch = -1;
@@ -120,7 +121,7 @@ void receive_connect(int L, int j){
     buff[1] = fragmentID;
     buff[2] = nodeState;
     MPI_Send (&buff , 3 , MPI_INT , edges[ind].destination , 9, MPI_COMM_WORLD );
-    cout << "SEND (smaller) Initiate(" << level << ", " << fragmentID << ", " << nodeState << ") from " << id << " to " << edges[ind].destination << endl;
+    cout << "SEND (smaller) "<< purple << "Initiate" << reset << "(" << level << ", " << fragmentID << ", " << nodeState << ") from " << id << " to " << edges[ind].destination << endl;
     //SEND Initiate(level,fragmentID,nodeState) to edges[ind].destination
     if (nodeState == 1) findcount++;
   }
@@ -139,19 +140,19 @@ void receive_connect(int L, int j){
     buff[1] = edges[ind].weight;
     buff[2] = 1;
     MPI_Send (&buff , 3 , MPI_INT , edges[ind].destination , 9, MPI_COMM_WORLD );
-    cout << "SEND (bigger) Initiate(" << level+1 << ", " << edges[ind].weight << ", " << 1 << ") from " << id << " to " << edges[ind].destination << endl;
+    cout << "SEND (bigger) "<< purple << "Initiate" << reset << "(" << level+1 << ", " << edges[ind].weight << ", " << 1 << ") from " << id << " to " << edges[ind].destination << endl;
     //SEND Initiate(level+1,edges[ind].weight,1) to edges[ind].destination
   }
 }
 
 //on receiving message Initiate(L,F,S) L is the level, F is the fragmentID, S is the nodeState and j - id is the path that the message took
 void receive_initiate(int L, int F, int S, int j){
-  cout << "[Proc " << id <<"] Received Initiate(" << L <<", " << F << ", " <<S<<") from " << j <<endl;
+  cout << "[Proc " << id <<"] Received "<< purple << "Initiate" << reset << "(" << L <<", " << F << ", " <<S<<") from " << j <<endl;
   level = L;
-  launch_test();
   fragmentID = F;
   nodeState = S;
   inbranch = j;
+  launch_test();
   launch_connect();
   launch_report();
   bestedge = -1;
@@ -163,7 +164,7 @@ void receive_initiate(int L, int F, int S, int j){
       buff[1] = F;
       buff[2] = S;
       MPI_Send (&buff , 3 , MPI_INT , edges[i].destination , 9, MPI_COMM_WORLD );
-      cout << "SEND (internal) Initiate(" << L << ", " << F << ", " << S << ") from " << id << " to " << edges[i].destination << endl;
+      cout << "SEND (internal) "<< purple << "Initiate" << reset << "(" << L << ", " << F << ", " << S << ") from " << id << " to " << edges[i].destination << endl;
       //SEND Initiate(L,F,S) to edges[i].destination
       if (S == 1) findcount++;
     }
@@ -191,7 +192,7 @@ void procedure_test(){
     buff[0] = level;
     buff[1] = fragmentID;
     MPI_Send (&buff , 2 , MPI_INT , edges[ind].destination , 20, MPI_COMM_WORLD );
-    cout << "SEND Test(" << level << ", " << fragmentID << ") from " << id << " to " << edges[ind].destination << endl;
+    cout << "SEND " << yellow << "Test" << reset <<"(" << level << ", " << fragmentID << ") from " << id << " to " << edges[ind].destination << endl;
     //SEND Test(level,fragmentID) to edges[ind].destination
   }
   else {
@@ -202,7 +203,7 @@ void procedure_test(){
 
 //receiving Test(L,F) level,fragmentID, j is the edge
 void receive_test(int L, int F, int j){
-  cout << "[Proc " << id <<"] Received Test(" << L << ", " << F << ") from " << j <<endl;
+  cout << "[Proc " << id <<"] Received " << yellow << "Test" << reset <<"(" << L << ", " << F << ") from " << j <<endl;
   int ind;
   if (nodeState == 0) procedure_wakeup();
   for (int k=0; k<deg;k++){
@@ -225,14 +226,14 @@ void receive_test(int L, int F, int j){
   else if (F != fragmentID){
     int buff = 0;
     MPI_Send (&buff , 1 , MPI_INT , edges[ind].destination , 1, MPI_COMM_WORLD );  
-    cout << "SEND Accept from " << id << " to " << edges[ind].destination << endl;
+    cout << "SEND "<<magenta<< "Accept" << reset << " from " << id << " to " << edges[ind].destination << endl;
     /*SEND Accept to j*/}
   else {
     if (edges[ind].state == 0) edges[ind].state = 2;
     if (testedge != ind) {
       int buff = 0;
       MPI_Send (&buff , 1 , MPI_INT , edges[ind].destination , 18, MPI_COMM_WORLD );
-      cout << "SEND Reject from " << id << " to " << edges[ind].destination << endl;
+      cout << "SEND "<<red<< "Reject" << reset << " from " << id << " to " << edges[ind].destination << endl;
       /*SEND Reject to j*/}
     else procedure_test();
   }
@@ -240,7 +241,7 @@ void receive_test(int L, int F, int j){
 
 //receiving Accept from edge j
 void receive_accept(int j){
-  cout << "[Proc " << id <<"] Received Accept from " << j <<endl;
+  cout << "[Proc " << id <<"] Received "<<magenta<< "Accept" << reset << " from " << j <<endl;
   testedge = -1;
   int ind;
   for (int k=0; k<deg;k++){
@@ -255,7 +256,7 @@ void receive_accept(int j){
 
 //receiving Reject from edge j
 void receive_reject(int j){
-  cout << "[Proc " << id <<"] Received Reject from " << j <<endl;
+  cout << "[Proc " << id <<"] Received "<<red<< "Reject" << reset << " from " << j <<endl;
   int ind;
   for (int k=0; k<deg;k++){
     if (edges[k].destination == j) ind = k;
@@ -272,14 +273,14 @@ void procedure_report(){
     nodeState = 2; //FOUND
     int buff = bestweight;
     MPI_Send (&buff , 1 , MPI_INT , inbranch , 16, MPI_COMM_WORLD );
-    cout << "SEND Report(" << bestweight << ") from " << id << " to " << inbranch << endl;
+    cout << "SEND "<< green << "Report" << reset << "(" << bestweight << ") from " << id << " to " << inbranch << endl;
     //SEND Report(bestweight) to inbranch
   }
 }
 
 //receiving Report(w) on edge j
 void receive_report(int w, int j){
-  cout << "[Proc " << id <<"] Received Report(" << w << ") from " << j <<endl;
+  cout << "[Proc " << id <<"] Received "<< green << "Report" << reset << "(" << w << ") from " << j <<endl;
   int ind;
   for (int k=0; k<deg;k++){
     if (edges[k].destination == j) ind = k;
@@ -309,7 +310,7 @@ void receive_report(int w, int j){
 
 //procedure to change fragment root
 void procedure_changeroot(){
-  cout << "bestedge = " << bestedge << "and points at " << edges[bestedge].destination << " in state " << edges[bestedge].state << endl;
+  cout << "bestedge = " << bestedge << " and points at " << edges[bestedge].destination << " in state " << edges[bestedge].state << endl;
   if (edges[bestedge].state == 1) {
     int buff = 0;
     MPI_Send (&buff , 1 , MPI_INT , edges[bestedge].destination , 8, MPI_COMM_WORLD );
@@ -458,9 +459,11 @@ int tag;
 
 while (!halt){
     MPI_Status stat;
+    int flag;
     // Probe for an incoming message from outside world
-    MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-    //cout << "PROBED" << endl;
+    MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD,&flag, &stat);
+    //cout << "[Proc "  << id <<"]PROBED" << endl;
+    if (flag){
     incoming = stat.MPI_SOURCE;
     tag = stat.MPI_TAG;
     
@@ -506,6 +509,9 @@ while (!halt){
     else if (tag == 8){
       receive_changeroot(incoming);
     }
+    else {
+    cout << "HEY YOU FORGOT ME YOU IDIOT !! MY TAG IS " << tag << red << reset << endl;
+    }
     /*
     if (rand()%10 == 5){
       halt = 1;
@@ -513,6 +519,7 @@ while (!halt){
       MPI_Bcast (&halt, 1, MPI_INT , id , MPI_COMM_WORLD );
     }
     */
+    }
 }
 
 for (int i=0;i<deg;i++){
