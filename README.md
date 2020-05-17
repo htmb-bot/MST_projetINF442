@@ -41,7 +41,7 @@ Then convert the graph to a readable format using our friend javiertheconverter.
 
 Then feel free to test the program on test-graph.cpp $./test-graph < example.txt
 
-#Small guide on how to test tasks 5-6
+# Small guide on how to test tasks 5-6
 
 Once test-graph.cpp compiled, you can test the clustering method with $./test-graph < input.txt  (input.txt here is just to launch the executable). It will create a cluster out of the .csv file mentionned in the main function, after ESSAI CLUSTERING. Then it will determine the optimal k number of clusters for the dataset, thanks to the silhouette evaluation.
 
