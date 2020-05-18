@@ -37,9 +37,24 @@ Implementation of an MST-based k-clustering strategy, where k is unknown (using 
 
 First generate a graph using $java -jar ashiip_gui.jar You will need to enter graph size and other desired properties.
 
+Compile using $make test-graph.
+
 Then convert the graph to a readable format using our friend javiertheconverter.cpp $./javiertheconverter < Graphexample.txt
 
 Then feel free to test the program on test-graph.cpp $./test-graph < example.txt
+
+# Testing task 3
+
+Use $make parallel_prim to compile.
+Execute using $mpirun -n p ./parallel_prim where p is the desired number of processors. A graph is randomly generated. You can change maxWeight and V (number of vertices in the file parallel_prim.cpp). If you want to test on a custom imput, make sure it is of the following adjacency matrix .txt format:
+
+3
+INF 1 2
+1 INF INF
+2 INF INF
+
+# Testing task 4
+
 
 # Small guide on how to test tasks 5-6
 
