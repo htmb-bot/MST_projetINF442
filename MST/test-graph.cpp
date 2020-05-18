@@ -297,7 +297,7 @@ void listerClusters(cloud &c, std::vector<std::string> names, int nb_clusters){
     // }
     std::cout<<"Répartition en clusters: "<< std::endl;
     for(int i=1;i<=nb_clusters;i++){
-      std::cout<<std::endl<<"dans le cluster "<<i<< " on trouve :"<<std::endl;
+      std::cout<<std::endl<<std::endl<<"dans le cluster "<<i<< " on trouve :"<<std::endl<<std::endl;
       
       //on renvoie le nom du représentant puis des représentés, précédés de leur numéro dans la liste initiale
 
@@ -671,6 +671,7 @@ int colonne_noms=4;
 cout << "" << endl;
 cout << red<<"BEGIN CLUSTERING WITH KRUSKAL" << reset <<endl;
 cout << "" << endl;
+cout << 'fichier utilise  : "<<csv_filename<<endl;
 start = high_resolution_clock::now();
 
 graph GG=kruskalclustering(csv_filename, nb_clusters, nb_samples, nb_dim, colonne_noms);
