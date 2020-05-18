@@ -55,6 +55,14 @@ INF 1 2
 
 # Testing task 4
 
+*note: at this point in time, the program freezes after a certain amount of time. Lines in cyan are confirmed MST branches. The execution on our example graph stops before it finds the last MST branch (6--8).
+
+Use $make gallager to compile.
+
+Execute using $mpirun -np p gallager < Input.txt where p is the number of vertices in the graph. Input must be in the ajacency matrix format. You can use our custom graph GraphMatrix2.txt, with 9 vertices. Be careful that all edge weights be distinct, otherwise fragmentIDs may not be unique. 
+
+On our school computers, this would be
+$mpirun -np 9 -host perone:3,radius:3,metacarpe:3 gallager < GraphMatrix2.txt
 
 # Small guide on how to test tasks 5-6
 
