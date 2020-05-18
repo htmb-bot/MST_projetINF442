@@ -48,10 +48,10 @@ Then feel free to test the program on test-graph.cpp $./test-graph < example.txt
 Use $make parallel_prim to compile.
 Execute using $mpirun -n p ./parallel_prim where p is the desired number of processors. A graph is randomly generated. You can change maxWeight and V (number of vertices in the file parallel_prim.cpp). If you want to test on a custom imput, make sure it is of the following adjacency matrix .txt format:
 
-3
-INF 1 2
-1 INF INF
-2 INF INF
+3 \n
+INF 1 2 \n
+1 INF INF \n
+2 INF INF \n
 
 # Testing task 4
 
