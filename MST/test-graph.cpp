@@ -671,7 +671,7 @@ int colonne_noms=4;
 cout << "" << endl;
 cout << red<<"BEGIN CLUSTERING WITH KRUSKAL" << reset <<endl;
 cout << "" << endl;
-cout << 'fichier utilise  : "<<csv_filename<<endl;
+cout << "fichier utilise  : "<<csv_filename<<endl;
 start = high_resolution_clock::now();
 
 graph GG=kruskalclustering(csv_filename, nb_clusters, nb_samples, nb_dim, colonne_noms);
