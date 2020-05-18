@@ -1,10 +1,10 @@
 #include <mpi.h>
- #include <time.h>
+#include <time.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 
-int INF = 100000;
+int INF = 10000;
 int size; //nombre de processeurs
 int rank; //numéro du processeur
 int* matrixBit; //morceau de la matrice accessible
@@ -16,16 +16,15 @@ int minWeight;
 int* MST;
 typedef struct { int p1; int p2; } Edge;
 
-
 int main(int argc, char* argv[]){
-clock_t start1,start2, end;
-start1 = clock();
+//clock_t start1,start2, end;
+//start1 = clock();
 
 MPI_Init( &argc, &argv );
 
 MPI_Comm_rank ( MPI_COMM_WORLD, &rank);
 MPI_Comm_size ( MPI_COMM_WORLD, &size );
-printf("rank is %d and number of processors is %d\n", rank , size);
+//printf("rank is %d and number of processors is %d\n", rank , size);
 
 if (rank == 0)
   {
@@ -100,29 +99,20 @@ MPI_Datatype matrixString;
 MPI_Type_contiguous(V,MPI_INT, &matrixString);
 MPI_Type_commit(&matrixString);
 MPI_Scatterv(graphMtrx,sendcounts,displs,matrixString,matrixBit,sendcounts[rank],matrixString,0,MPI_COMM_WORLD);
-/*
-if(rank==0)
-  {
-    for (i = 0; i < V; ++i)
-    {  
-      for ( j = 0; j < V; ++j)
-      {
-        printf("%d ", matrixBit[V*i+j]); // just for test
-      }
-      printf("\n");
-    }
-  }
-*/
 
 
-start2 = clock();
+//start2 = clock();
+ double start; 
 
+  start = MPI_Wtime();
 
 
 MST = (int*)malloc(sizeof(int)*V);
 for ( i = 0; i < V; i++) MST[i] = -1;
 MST[0] = 0;
 minWeight = 0;
+
+
 
 ////////////////////////////
 
@@ -163,23 +153,27 @@ int p2 = 0;
     MST[edge.p2] = edge.p1;
     minWeight += pair.mini;
   }
-end = clock();
-
+//end = clock();
+/*
 double cpu_time_used1,cpu_time_used2;
 cpu_time_used1 = ((double) (end - start1)) / (double) CLOCKS_PER_SEC;
 cpu_time_used2 = ((double) (end - start2)) / (double) CLOCKS_PER_SEC;
+*/
 
+double finish, calc_time; 
+finish = MPI_Wtime();
+calc_time = finish-start;
 
   if (rank == 0)
   {
   printf("\nBUILDING MST\n");
-    for ( i=1; i< V; i++)
-      printf("%d -- %d poids = %d\n",i, MST[i],graphMtrx[V*i+MST[i]]);      
+//    for ( i=1; i< V; i++)
+//      printf("%d -- %d poids = %d\n",i, MST[i],graphMtrx[V*i+MST[i]]);      
     printf("\nNombre de processeurs: %d\nNombre de sommets: %d\nPoids Total: %d\n\n", size, V-1 , minWeight);
-    printf("Temps total depuis le depart = %f secondes\n" ,cpu_time_used1);
-    printf("Temps de calcul du MST = %f secondes\n" ,cpu_time_used2);
-  
+    printf("Temps de calcul du MST = %f secondes\n" ,calc_time);  
   }
+
+
 
 MPI_Finalize();
 
