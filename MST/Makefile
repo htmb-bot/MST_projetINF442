@@ -23,6 +23,8 @@ ghs_edge.o:		ghs_edge.cpp ghs_edge.hpp
 
 test-graph: test-graph.cpp graph.o edge.o point.o cloud.o javiertheconverter.cpp
 	$(CXX) $(CXXFLAGS) -o $@ test-graph.cpp graph.o edge.o point.o cloud.o
+
+javiertheconverter: javiertheconverter.cpp
 	$(CXX) $(CXXFLAGS) -o $@ javiertheconverter.cpp
 
 parallel_prim: parallel_prim.cpp
