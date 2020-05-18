@@ -1,3 +1,9 @@
+//Pour lancer test-graph, lancer la commance ./test-graph < input.txt
+//Les clustering se fait automatiquement sur le fichier iris.csv
+//Pour faire le clustering sur cereales.csv, commenter les lignes 658->662 et commenter les lignes 664-668
+//Pour clusteriser un autre fichier, rentrer son nom csv_filename, le nombre de clusters souhaités nb_cluster, le nombre de coordonnées par points nb_dim,
+// le nombre de points nb_samples, et l'indice de la colonne du nom des points colonne_noms
+
 #include <iostream>
 #include <chrono> 
 #include <fstream>
@@ -203,7 +209,174 @@ graph prim(graph G){
   
 }
 
-graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_columns) {
+void attribuerClusters(cloud &c ,std::vector<std::string> names, graph G, int nb_points, int nb_clusters){
+    
+    //on crée la liste des parents, où pour chaque paire, le parent est celui à la plus petite position
+    int parent[nb_points];
+
+    //désormais on a la graph, il nous assigner à chaque cluster ses points
+    int representant[nb_points];
+
+    for(int i=0; i<nb_points;i++){
+      representant[i]=-1; //tous sont leur propre représentant de cluster au début
+      parent[i]=-1;
+    }
+
+    //on détermine les liens de parenté
+    for(int i=0; i<nb_points-nb_clusters;i++){
+      edge e=G.edges[i];
+      int p1=e.p1;
+      int p2=e.p2;
+
+      // rp1, rp2 sont les representants locaux de p1, p2
+      int rp1=p1;
+      int rp2=p2;
+      while(parent[rp1]!=-1){
+        rp1=parent[rp1];
+      }
+      while(parent[rp2]!=-1){
+        rp2=parent[rp2];
+      }
+
+      if (rp1>rp2){
+        parent[rp1]=rp2;
+      } 
+      else{
+        parent[rp2]=rp1;
+      }
+    }
+    // for(int i=0;i<nb_points;i++){
+    //   std::cout<<parent[i]<<"  ";
+    // }
+    // std::cout<<std::endl;
+
+    //puis les liens de représentation
+    for(int i=0;i<nb_points;i++){
+        if(parent[i]!=-1){
+          //std::cout<<i;
+          if (representant[parent[i]]==-1){
+            representant[i]=parent[i];
+          }
+          else{
+            representant[i]=representant[parent[i]];
+          }
+        }
+        //std::cout<<representant[i]<<"  ";
+      
+    }
+    //attribution des labels
+    int rep=0;
+    for(int i=1;i<=nb_clusters;i++){
+      //on cherche un representant
+      while(representant[rep]!=-1){
+        rep++;
+      }
+      
+      //on détermine le cluster du représenatnt , puis des représentés
+      (c.get_point(rep)).label=i;
+
+      //std::cout<<"   représentantt"<<(c.get_point(rep)).label<<"    "<<rep<<std::endl;
+
+      for(int j=rep;j<nb_points;j++){
+        if (representant[j]==rep){
+          (c.get_point(j)).label=i;
+          //std::cout<<"   "<<(c.get_point(j)).label<<"  "<< j<< std::endl;
+        }
+      }
+      rep++;
+    }
+
+}
+
+void listerClusters(cloud &c, std::vector<std::string> names, int nb_clusters){
+    //les points sont répartis dans leur cluster suivant leur label
+    
+    // for(int i=0; i<c.get_n();i++){
+    //   std::cout<<i<<"dans label  "<<(c.get_point(i)).label<<std::endl;
+    //   std::cout<<names[i];
+    // }
+    std::cout<<"Répartition en clusters: "<< std::endl;
+    for(int i=1;i<=nb_clusters;i++){
+      std::cout<<std::endl<<"dans le cluster "<<i<< " on trouve :"<<std::endl;
+      
+      //on renvoie le nom du représentant puis des représentés, précédés de leur numéro dans la liste initiale
+
+      for(int j=0;j<c.get_n();j++){
+        if ((c.get_point(j)).label==i){
+          std::cout<<j <<names[j]<<" , ";
+        }
+      }
+    }
+
+}
+
+double silhouette(int k, cloud& c)
+    {
+        double sil = 0.0;
+        double a;
+        double b;
+        double avg_distance[k];
+        int n=c.get_n();
+        int label;
+        int nb_in_cluster[k];
+    
+        for (int i = 0; i < n; i++)
+        {
+            
+            label = (c.get_point(i)).label;
+	          // init avg_distance
+	          for (int m = 0; m < k; m++){
+		          avg_distance[m] = 0.0;
+	          }
+            for(int i=0;i<k;i++){
+              nb_in_cluster[i]=0;
+            }
+            // a(p), b(p)
+            a = 0.0;
+            for (int j = 0; j < n; j++){
+                if (j!=i){
+                    nb_in_cluster[(c.get_point(j)).label-1] += 1;
+                    avg_distance[(c.get_point(j)).label-1] += (c.get_point(i)).dist(c.get_point(j));
+                }    
+                
+            }
+            if(nb_in_cluster[label-1]!=0){
+              a =avg_distance[label-1] /nb_in_cluster[label-1];
+            }
+            else{
+              a=0;
+            }
+            for (int m =0; m < k; m++){
+              if(nb_in_cluster[m]>0){
+                avg_distance[m] /= (double)nb_in_cluster[m];
+              }
+              else  {
+                avg_distance[m]=0;
+              } 
+            }
+            b=DBL_MAX;
+            for (int m = 0; m < k; m++){
+                if ((m+1 != label) && (avg_distance[m] < b)){
+
+                    b = avg_distance[m];
+                }
+            }
+            if(k==1){
+              b=0;
+            }
+            //std::cout<<"  b  "<<b<<"  a  "<<a<<std::endl;
+            if (a > b) sil += (b - a) / a;
+            else sil += (b - a) / b;
+        }
+        //std::cout<<"fin silhouette"<<std::endl;
+        //std::cout<<sil<<std::endl;
+        return sil / (double)n;
+    }
+
+
+//kruskalclustering affiche les clusters avec les points contenus dans ce cluster
+
+graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_samples, int nb_columns, int colonne_noms) {
   std::cout<<"début clustering"<<std::endl  ;
 
   // open data file
@@ -214,7 +387,6 @@ graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_column
 	// read header line
 	std::string header_line;
 	std::getline(is, header_line);
-	std::vector<std::string> names;
 
 	//const int d = nb_columns(header_line) - 1; //on enleve la colonne finale des noms
   const int d=nb_columns;
@@ -224,11 +396,10 @@ graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_column
 
 	//créer le graphe 
   std::cout<<"debut creation graph"<<std::endl;
-  std::vector<edge> edges;
-	std::vector<point> points;
+  std::vector<std::string> names; //names contiendra le noms des échantillons pour le clustering final
 
-	// point to read into
-  cloud c(nb_columns,10000 , k);
+	// contiendra les points
+  cloud c(nb_columns,nb_samples , k);
 
   //pour contenir le nom des points, pas utile
   std::string next_name;
@@ -240,17 +411,27 @@ graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_column
     point p=*new point();
 		for(int m = 0; m < d; m++)
 		{
-			is >> p.coords[m];
+      //take out name of sample
+      if (m<colonne_noms){
+        is >> p.coords[m];
+        
+      }
+			else{
+        is >> p.coords[m+1];
+      }
+      // keep its name in memory
+
 		}
 
 		c.add_point(p, 0);
 
 		// consume \n
     is >> next_name;
+    names.push_back(next_name);
 		nb_points++;
 		is.get();
 	}
-  
+  //c.add_point(point())
   std::cout<<"nombre de points utilisés dans cette base de données: ";
   std::cout<<nb_points<<std::endl;
   std::cout<<"nombre de clusters souhaité: "<<nb_clusters<<std::endl;
@@ -265,11 +446,11 @@ graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_column
             list.push_back(edge(i,j,c.get_point(i).dist(c.get_point(j))));
         }
     }
-    std::sort(list.begin(), list.end(),compare);
+    //std::sort(list.begin(), list.end(),compare);
 
     graph G=graph(list, nb_points);
     std::cout<<std::endl;
-    //G.print();
+    // G.print();
     std::cout<<std::endl;
 
     //on transforme G en MST
@@ -277,13 +458,127 @@ graph kruskalclustering(std::string csv_filename, int nb_clusters, int nb_column
 
     //on supprime les k-1 derniers éléments, qui correspodnent aux arêtes de plus gros poids
     std::vector<edge> Ed=G_MST.edges; 
+    std::sort(Ed.begin(), Ed.end(),compare);
     for(int i=0; i<k-1;i++){
         Ed.pop_back();
     }
     graph finalG=graph(Ed, nb_points);
+    
+    //on liste les composants du cluster
+    attribuerClusters(c,names, finalG, nb_points, nb_clusters); //c est modifié
+    listerClusters(c, names, nb_clusters);
+
     return finalG;
 }
 
+//kruskal_k_clustering va faire le calcul de la silhouette pour k clusters obtenus.
+//le k optimal sera obtenu dans determine_k()
+
+double kruskal_k_clustering(std::string csv_filename, int nb_clusters, int nb_samples, int nb_columns, int colonne_noms) {
+  //std::cout<<"début clustering"<<std::endl  ;
+
+  // open data file
+	std::ifstream is(csv_filename);
+	assert(is.is_open());
+  //std::cout<<"fichier ouvert"<<std::endl  ;
+
+	// read header line
+	std::string header_line;
+	std::getline(is, header_line);
+
+	//const int d = nb_columns(header_line) - 1; //on enleve la colonne finale des noms
+  const int d=nb_columns;
+	const int k = nb_clusters;
+	int nb_points=0;
+  point::set_dim(nb_columns);
+
+	//créer le graphe 
+  std::vector<std::string> names; //names contiendra le noms des échantillons pour le clustering final
+
+	// contiendra les points
+  cloud c(nb_columns,nb_samples , k);
+
+  //pour contenir le nom des points, pas utile
+  std::string next_name;
+
+	// while not at end of file
+	while(is.peek() != EOF)
+	{
+		// read new points
+    point p=*new point();
+		for(int m = 0; m < d; m++)
+		{
+      //take out name of sample
+      if (m<colonne_noms){
+        is >> p.coords[m];
+      }
+			else{
+        is >> p.coords[m+1];
+      }
+      // keep its name in memory
+
+		}
+
+		c.add_point(p, 0);
+
+		// consume \n
+    is >> next_name;
+    names.push_back(next_name);
+		nb_points++;
+		is.get();
+	}
+  
+  //std::cout<<"nombre de points utilisés dans cette base de données: ";
+  //std::cout<<nb_points<<std::endl;
+  //std::cout<<"nombre de clusters souhaité: "<<nb_clusters<<std::endl;
+
+
+  //créer le graphe 
+  std::vector<edge> list;
+  //y ajouter toutes les arêtes de 2 points distincts// et triées en poids
+  for(int i=0;i<nb_points;i++){
+      for (int j=i+1;j<nb_points;j++){
+          list.push_back(edge(i,j,c.get_point(i).dist(c.get_point(j))));
+      }
+  }
+  std::sort(list.begin(), list.end(),compare);
+  graph G=graph(list, nb_points);
+  //std::cout<<std::endl;
+  //G.print();
+  //std::cout<<std::endl;
+
+  //on transforme G en MST
+  graph G_MST = kruskal(G);
+
+  //on supprime les k-1 derniers éléments, qui correspodnent aux arêtes de plus gros poids
+  std::vector<edge> Ed=G_MST.edges; 
+  for(int i=0; i<k-1;i++){
+      Ed.pop_back();
+  }
+  graph finalG=graph(Ed, nb_points);
+  
+  //on liste les composants du cluster
+  attribuerClusters(c,names, finalG, nb_points, nb_clusters); //c est modifié
+  double silhouette_k=silhouette(nb_clusters, c);
+  //std::cout<<"sorti de silhouette()"<<std::endl<<std::endl;
+  return silhouette_k;
+}
+
+void determine_k(std::string csv_filename, int nb_samples, int nb_columns, int colonne_noms){
+  int best_k=0;
+  double best_silhouette=-1.0;
+  double sil=0.0;
+  std::cout<<"determination de la meilleure silhouette selon k pour "<<csv_filename<<std::endl<<std::endl;
+  for (int k=1;k<20;k++){
+    sil=kruskal_k_clustering(csv_filename,k, nb_samples, nb_columns,colonne_noms);
+    std::cout<<"k = "<< k<<"  -->  silhouette  = "<<sil<<std::endl;
+    if (sil>best_silhouette){
+      best_silhouette=sil;
+      best_k=k;
+    }
+  }
+  std::cout<<std::endl<<std::endl<<"le meilleur k est : " << best_k <<" pour une silhouette de " << best_silhouette<< std::endl;
+}
 
 
 
@@ -363,18 +658,44 @@ cout << endl;
 std::string csv_filename= "./iris.csv";
 int nb_clusters= 3;
 int nb_dim=4;
+int nb_samples=150;
+int colonne_noms=4;
+
+// std::string csv_filename= "./cereales.csv";
+// int nb_clusters= 3;
+// int nb_dim=13;
+// int nb_samples=77;
+// int colonne_noms=13;
+
 
 cout << "" << endl;
 cout << red<<"BEGIN CLUSTERING WITH KRUSKAL" << reset <<endl;
 cout << "" << endl;
 start = high_resolution_clock::now();
 
-graph GG=kruskalclustering(csv_filename, nb_clusters, nb_dim);
+graph GG=kruskalclustering(csv_filename, nb_clusters, nb_samples, nb_dim, colonne_noms);
 stop = high_resolution_clock::now(); 
-GG.print();
+//GG.print();
 duration = duration_cast<microseconds>(stop - start); 
-cout << green << "OK:" <<"Boruvka executed in " << duration.count() << " microseconds"<<reset << endl;
+cout << green << std::endl<<"OK:" <<"Clustering executed in " << duration.count() << " microseconds"<<reset << endl;
 
+
+
+/////////
+//Silhouette
+////////
+
+
+cout << "" << endl;
+cout << red<<"BEGIN SILHOUETTE ON CLUSTERING" << reset <<endl;
+cout << "" << endl;
+start = high_resolution_clock::now();
+
+determine_k(csv_filename,nb_samples,nb_dim,colonne_noms);
+stop = high_resolution_clock::now(); 
+//GG.print();
+duration = duration_cast<microseconds>(stop - start); 
+cout << green << "OK:" <<"Clustering executed in " << duration.count() << " microseconds"<<reset << endl;
 
 return 0;
 }

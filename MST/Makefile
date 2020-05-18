@@ -16,8 +16,10 @@ all: test-graph
 
 edge.o:			edge.cpp edge.hpp
 graph.o: 		graph.cpp edge.hpp graph.hpp
+point.o:		point.cpp point.hpp
+cloud.o:		cloud.cpp cloud.hpp point.hpp
 
-test-graph: test-graph.cpp graph.o edge.o
+test-graph: test-graph.cpp graph.o edge.o point.o cloud.o
 	$(CXX) $(CXXFLAGS) -o $@ test-graph.cpp graph.o edge.o point.o cloud.o
 
 clean-objects:

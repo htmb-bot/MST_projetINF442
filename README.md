@@ -40,5 +40,18 @@ First generate a graph using $java -jar ashiip_gui.jar You will need to enter gr
 Then convert the graph to a readable format using our friend javiertheconverter.cpp $./javiertheconverter < Graphexample.txt
 
 Then feel free to test the program on test-graph.cpp $./test-graph < example.txt
+
+# Small guide on how to test tasks 5-6
+
+Once test-graph.cpp compiled, you can test the clustering method with $./test-graph < input.txt  (input.txt here is just to launch the executable). It will create a cluster out of the .csv file mentionned in the main function, after ESSAI CLUSTERING. Then it will determine the optimal k number of clusters for the dataset, thanks to the silhouette evaluation.
+
+Without changing the test-graph.cpp, $./test-graph < input.txt apply the methods on the iris.csv dataset. To change the number of clusters, change the nb_clusters integer in the main function.
+
+You can try it on cereales.csv by uncommenting lines 658-662 and commenting lines 664-668.
+
+You can feel free to test the clustering method on test-graph.cpp on other csv files. However, provide the file name csv_filename, the desired number of cluster nb_cluster, the point space dimension nb_dim (WITHOUT THE POINTS NAMES), the number of points nb_samples (without the first line containing the names of coordinates), and the name column index colonne_noms (if it is the first column, enter 0).
+If you decide to change csv file, the file must respect one space between point coordinates at each line.
+
+
   
 
