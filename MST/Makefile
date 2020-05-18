@@ -8,11 +8,11 @@ ifneq ($(OS), Windows_NT)
     endif
 endif
 
-sources = edge.cpp graph.cpp parallel_prim.cpp 
+sources = point.cpp cloud.cpp edge.cpp graph.cpp parallel_prim.cpp javiertheconverter.cpp
 headers = $(patsubst %.cpp,%.hpp,$(sources)) 
 objects = $(patsubst %.cpp,%.o,$(sources))
 
-all: test-graph parallel_prim gallager
+all: test-graph parallel_prim gallager javiertheconverter
 .PHONY: all clean clean-objects clean-programs
 
 edge.o:			edge.cpp edge.hpp
@@ -40,6 +40,7 @@ clean-programs:
 	rm -vf test-graph
 	rm -vf parallel_prim
 	rm -vf gallager
+	rm -vf javiertheconverter
 	
 clean: clean-objects clean-programs
 	rm -vf *~
