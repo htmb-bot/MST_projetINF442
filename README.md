@@ -10,7 +10,7 @@ Implementation of PRIM and BORUKVA -sequential algorithms for MST search- in fil
 
 # Task 2: 
 
-Implementation of KRUSKAL -sequential algorithm for MST search- in file test-graph.cpp
+Implementation of KRUSKAL -sequential algorithm for MST search- in file test-graph.cpp, requires class edge, class graph
 
 *note: for parallel algorithm, we use the MPI (Message Passing Interface) standard for C/C++
 
@@ -20,20 +20,20 @@ Implementation of PRIM's algorithm adapted for parallel computing. in file paral
 
 # Task 4: 
 
-Implementation of GHS (Gallager-Humblet-Spira) algorithm for MST construction in asynchronous Message-passing model. in file ghs_fromscratch.cpp
+Implementation of GHS (Gallager-Humblet-Spira) algorithm for MST construction in asynchronous Message-passing model. in file ghs_fromscratch.cpp, requires class ghs_edge
 
 # Task 5: 
 
-Implementation of an MST-based k-clustering strategy. in file test-graph.cpp
+Implementation of an MST-based k-clustering strategy. in file test-graph.cpp, requires class edge, class graph, class point, class cloud
 
 # Task 6: 
 
-Implementation of an MST-based k-clustering strategy, where k is unknown (using the silhouette method). in file test-graph.cpp
+Implementation of an MST-based k-clustering strategy, where k is unknown (using the silhouette method). in file test-graph.cpp, requires class edge, class graph, class point, class cloud
 
-*Tests for tasks 1-4: Testing results and efficiency on randomly generated network-simulating graphs using the ASHIIP software
-*Tests for tasks 5-6: Testing results and efficiency on public datasets such as iris.csv
+*Tests for tasks 1-4: Testing results and efficiency on randomly generated network-simulating graphs using the ASHIIP software, and custom graph GraphMatrix2.txt for gallager
+*Tests for tasks 5-6: Testing results and efficiency on public datasets such as iris.csv and cereals.csv
 
-# Small guide on how to test tasks 1-2:
+# Testing tasks 1-2:
 
 First generate a graph using $java -jar ashiip_gui.jar You will need to enter graph size and other desired properties.
 
@@ -64,7 +64,7 @@ Execute using $mpirun -np p gallager < Input.txt where p is the number of vertic
 On our school computers, this would be
 $mpirun -np 9 -host perone:3,radius:3,metacarpe:3 gallager < GraphMatrix2.txt
 
-# Small guide on how to test tasks 5-6
+# Testing tasks 5-6
 
 Once test-graph.cpp compiled, you can test the clustering method with $./test-graph < input.txt  (input.txt here is just to launch the executable). It will create a cluster out of the .csv file mentionned in the main function, after ESSAI CLUSTERING. Then it will determine the optimal k number of clusters for the dataset, thanks to the silhouette evaluation.
 
