@@ -8,7 +8,7 @@
 using namespace std;
 
 #include "mpi.h"
-#include "ghs_edge.cpp"
+#include "ghs_edge.hpp"
 
 
 //colour stamps
@@ -390,7 +390,7 @@ cout << " Bonjour, je suis le sommet " << id << " je suis controle par " << proc
 
 MPI_Barrier(MPI_COMM_WORLD);
 
-// Le process 0 récolte l'input
+// Le process 0 rÃ©colte l'input
 if  (id == 0){
 
   cout << "[Proc 0] Je vais recolter les informations relatives au graphe" << endl;
